@@ -24,10 +24,8 @@ except:
 df = preprocess(df)
 
 # Split the data into a training and testing set
-
-
-# Build MLP
-model = Sequential()
-
-# Results - Accuracy
-
+X = df.drop("Outcome", axis=1).values
+y = df["Outcome"].values
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, train_size=0.8, random_state = 16
+)
