@@ -11,10 +11,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Input
 from utils import preprocess
 
-# optimal layer sizes and epochs from tune_hyperparams.py were 96->48, 40, 
-# but these values were manually found to have slightly less loss:
-HIDDEN_1, HIDDEN_2 = 92, 46
-EPOCHS = 38
+# Optimal settings from tune_hyperparams2.py (same seed/split as tuner).
+HIDDEN_1, HIDDEN_2, HIDDEN_3 = 80, 40, 20
+EPOCHS = 25
 
 try:
     df = pd.read_csv("diabetes.csv")
@@ -44,6 +43,7 @@ model = Sequential(
         Input(shape=(8,)), # input layer
         Dense(HIDDEN_1, activation="relu"), # hidden layer 1
         Dense(HIDDEN_2, activation="relu"), # hidden layer 2
+        Dense(HIDDEN_3, activation="relu"), # hidden layer 3
         Dense(1, activation="sigmoid"), # output layer
     ]
 )
