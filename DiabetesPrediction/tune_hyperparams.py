@@ -1,6 +1,7 @@
 """
-Grid search for hidden layer sizes and epochs.
-Resets the random seed before each trial so scores are comparable to a single `main.py` run.
+Random search for hidden layer sizes and epochs.
+Each sampled configuration is trained/evaluated 10 times and ranked by average test accuracy.
+Search evaluates a fixed number of random configurations.
 """
 import os
 
@@ -16,6 +17,12 @@ from keras.layers import Dense, Input
 from utils import preprocess
 
 RANDOM_SEED = 16
+MAX_CONFIGS = 10
+RUNS_PER_CONFIG = 10
+BATCH_SIZE = 32
+HIDDEN_1_RANGE = (16, 100)
+HIDDEN_2_RANGE = (8, 60)
+EPOCHS_RANGE = (10, 50)
 
 df = preprocess(pd.read_csv("diabetes.csv"))
 X = df.drop("Outcome", axis=1).values
@@ -23,23 +30,6 @@ y = df["Outcome"].values
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, train_size=0.8, random_state=RANDOM_SEED
 )
-
-hidden_configs = [
-    (128, 64),
-    (96, 48),
-    (80, 40),
-    (64, 64),
-    (64, 32),
-    (64, 16),
-    (48, 32),
-    (48, 24),
-    (32, 32),
-    (32, 24),
-    (32, 16),
-    (24, 12),
-]
-epochs_list = [25, 40, 60, 90, 120]
-
 
 def build_model(h1: int, h2: int):
     return Sequential(
@@ -52,14 +42,25 @@ def build_model(h1: int, h2: int):
     )
 
 
-best_acc = -1.0
-best_loss = float("inf")
-best = None
+def sample_config(rng: np.random.Generator):
+    h1 = int(rng.integers(HIDDEN_1_RANGE[0], HIDDEN_1_RANGE[1] + 1))
+    # Keep second hidden layer <= first hidden layer
+    h2_max = min(HIDDEN_2_RANGE[1], h1)
+    h2 = int(rng.integers(HIDDEN_2_RANGE[0], h2_max + 1))
+    # Bias towards lower epoch counts so more configs train quickly.
+    u = float(rng.random())
+    epochs = int(EPOCHS_RANGE[0] + (EPOCHS_RANGE[1] - EPOCHS_RANGE[0]) * (u**2))
+    epochs = max(EPOCHS_RANGE[0], min(EPOCHS_RANGE[1], epochs))
+    return h1, h2, epochs
 
-for h1, h2 in hidden_configs:
-    for epochs in epochs_list:
-        set_random_seed(RANDOM_SEED)
-        np.random.seed(RANDOM_SEED)
+
+def evaluate_config(h1: int, h2: int, epochs: int):
+    accuracies = []
+    losses = []
+    for run_idx in range(RUNS_PER_CONFIG):
+        run_seed = RANDOM_SEED + run_idx
+        set_random_seed(run_seed)
+        np.random.seed(run_seed)
         model = build_model(h1, h2)
         model.compile(
             optimizer="adam",
@@ -70,18 +71,44 @@ for h1, h2 in hidden_configs:
             X_train,
             y_train,
             epochs=epochs,
-            batch_size=32,
+            batch_size=BATCH_SIZE,
             validation_split=0.1,
             verbose=0,
         )
         loss, acc = model.evaluate(X_test, y_test, verbose=0)
-        print(
-            f"h1={h1:3d} h2={h2:3d} epochs={epochs:3d} -> "
-            f"test_acc={acc:.4f} test_loss={loss:.4f}"
-        )
-        if acc > best_acc or (acc == best_acc and loss < best_loss):
-            best_acc = acc
-            best_loss = loss
-            best = (h1, h2, epochs, loss, acc)
+        losses.append(float(loss))
+        accuracies.append(float(acc))
+    return float(np.mean(losses)), float(np.mean(accuracies))
 
-print("\nBest:", best)
+
+rng = np.random.default_rng(RANDOM_SEED)
+seen_configs = set()
+best = None
+best_acc = -1.0
+best_loss = float("inf")
+
+evaluations = 0
+
+while evaluations < MAX_CONFIGS:
+    config = sample_config(rng)
+    if config in seen_configs:
+        continue
+    seen_configs.add(config)
+    h1, h2, epochs = config
+
+    avg_loss, avg_acc = evaluate_config(h1, h2, epochs)
+    evaluations += 1
+
+    print(
+        f"[{evaluations:02d}] h1={h1:3d} h2={h2:3d} epochs={epochs:3d} -> "
+        f"avg_test_acc={avg_acc:.4f} avg_test_loss={avg_loss:.4f} "
+        f"(progress={evaluations}/{MAX_CONFIGS})"
+    )
+
+    if avg_acc > best_acc or (avg_acc == best_acc and avg_loss < best_loss):
+        best_acc = avg_acc
+        best_loss = avg_loss
+        best = (h1, h2, epochs, avg_loss, avg_acc)
+
+print(f"\nCompleted {evaluations} configurations.")
+print("Best:", best)
