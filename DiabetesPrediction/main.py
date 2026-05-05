@@ -3,11 +3,10 @@ import pandas as pd
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-
 from keras.utils import set_random_seed
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
-from keras.layers import Dense, Input
+from keras.layers import Dense
 
 from results_logger import save_results
 from utils import preprocess
@@ -15,15 +14,10 @@ from utils import preprocess
 
 RANDOM_SEED = 16
 
-# Model parameters
-HIDDEN_1 = 92
-HIDDEN_2 = 46
+# optimal layer sizes and epochs from tune_hyperparams.py were 96->48, 40,
+# but these values were manually found to have slightly less loss:
+HIDDEN_1, HIDDEN_2 = 92, 46
 EPOCHS = 38
-BATCH_SIZE = 32
-TEST_SIZE = 0.2
-TRAIN_SIZE = 0.8
-VALIDATION_SPLIT = 0.1
-
 
 try:
     df = pd.read_csv("diabetes.csv")
@@ -51,14 +45,13 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=RANDOM_SEED
 )
 
-set_random_seed(RANDOM_SEED)
+tf.set_random_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 
 # Build MLP
 model = Sequential(
     [
-        Input(shape=(8,)), # input layer
-        Dense(HIDDEN_1, activation="relu"), # hidden layer 1
+        Dense(HIDDEN_1, activation="relu", input_shape=(8,)), # hidden layer 1
         Dense(HIDDEN_2, activation="relu"), # hidden layer 2
         Dense(1, activation="sigmoid"), # output layer
     ]
