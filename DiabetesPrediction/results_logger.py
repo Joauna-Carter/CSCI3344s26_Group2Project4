@@ -3,26 +3,17 @@ import time
 import pandas as pd
 
 
-def save_results(history, accuracy, epochs, batch_size, plt):
-    # create main folder
+def save_results(history, test_loss, test_accuracy, epochs, batch_size, plt):
     os.makedirs("model_results", exist_ok=True)
 
-    # timestamp
     timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
 
-    # create folder for this run
     run_folder = f"model_results/run_{timestamp}"
     os.makedirs(run_folder, exist_ok=True)
 
-    
-    # Save graph (WITH timestamp)
-   
     graph_filename = f"{run_folder}/accuracy_graph_{timestamp}.png"
     plt.savefig(graph_filename)
 
-    
-    # Save epoch results (WITH timestamp)
-    
     epoch_filename = f"{run_folder}/epoch_results_{timestamp}.csv"
 
     epoch_df = pd.DataFrame(history.history)
@@ -30,31 +21,49 @@ def save_results(history, accuracy, epochs, batch_size, plt):
     epoch_df.index.name = "Epoch"
     epoch_df.to_csv(epoch_filename)
 
-   
-    # Summary file (one row per run)
-    
-    general_csv = "model_results/general_results.csv"
+    train_accuracy = history.history["accuracy"][-1]
+    validation_accuracy = history.history["val_accuracy"][-1]
+    train_loss = history.history["loss"][-1]
+    validation_loss = history.history["val_loss"][-1]
 
-    train_acc = history.history["accuracy"][-1]
-    val_acc = history.history["val_accuracy"][-1]
+    general_csv = "model_results/general_results.csv"
 
     new_row = {
         "RunTime": timestamp,
         "Epochs": epochs,
         "BatchSize": batch_size,
-        "TrainAccuracy": round(train_acc, 4),
-        "ValidationAccuracy": round(val_acc, 4),
-        "TestAccuracy": round(accuracy, 4),
+        "TrainAccuracy": round(train_accuracy, 4),
+        "ValidationAccuracy": round(validation_accuracy, 4),
+        "TrainLoss": round(train_loss, 4),
+        "ValidationLoss": round(validation_loss, 4),
+        "TestAccuracy": round(test_accuracy, 4),
+        "TestLoss": round(test_loss, 4),
         "RunFolder": run_folder,
         "GraphFile": graph_filename,
         "EpochFile": epoch_filename
     }
 
-    # append or create
     if os.path.exists(general_csv):
         df_results = pd.read_csv(general_csv)
-        df_results = pd.concat([df_results, pd.DataFrame([new_row])], ignore_index=True)
     else:
-        df_results = pd.DataFrame([new_row])
+        df_results = pd.DataFrame()
 
+    df_results = pd.concat([df_results, pd.DataFrame([new_row])], ignore_index=True)
+
+    column_order = [
+        "RunTime",
+        "Epochs",
+        "BatchSize",
+        "TrainAccuracy",
+        "ValidationAccuracy",
+        "TrainLoss",
+        "ValidationLoss",
+        "TestAccuracy",
+        "TestLoss",
+        "RunFolder",
+        "GraphFile",
+        "EpochFile"
+    ]
+
+    df_results = df_results.reindex(columns=column_order)
     df_results.to_csv(general_csv, index=False)

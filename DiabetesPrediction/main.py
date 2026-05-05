@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+
 from keras.utils import set_random_seed
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
@@ -11,12 +12,18 @@ from keras.layers import Dense, Input
 from results_logger import save_results
 from utils import preprocess
 
+
 RANDOM_SEED = 16
 
-# optimal layer sizes and epochs from tune_hyperparams.py were 96->48, 40,
-# but these values were manually found to have slightly less loss:
-HIDDEN_1, HIDDEN_2 = 92, 46
+# Model parameters
+HIDDEN_1 = 92
+HIDDEN_2 = 46
 EPOCHS = 38
+BATCH_SIZE = 32
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
+
 
 try:
     df = pd.read_csv("diabetes.csv")
@@ -27,15 +34,21 @@ except Exception:
       """)
     quit()
 
+
 # Perform preprocessing (imputation, standardization)
 df = preprocess(df)
 
-# Split the data into a training and testing set
+# Split the data into input features and target output
 X = df.drop("Outcome", axis=1).values
 y = df["Outcome"].values
 
+# Split the data into a training and testing set
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, train_size=0.8, random_state=RANDOM_SEED
+    X,
+    y,
+    test_size=TEST_SIZE,
+    train_size=TRAIN_SIZE,
+    random_state=RANDOM_SEED
 )
 
 set_random_seed(RANDOM_SEED)
@@ -63,10 +76,16 @@ history = model.fit(
     X_train,
     y_train,
     epochs=EPOCHS,
-    batch_size=32,
-    validation_split=0.1,
+    batch_size=BATCH_SIZE,
+    validation_split=VALIDATION_SPLIT,
     verbose=2,
 )
+
+# Print final training and validation results
+print(f"\nFinal training accuracy: {history.history['accuracy'][-1]:.4f}")
+print(f"Final validation accuracy: {history.history['val_accuracy'][-1]:.4f}")
+print(f"Final training loss: {history.history['loss'][-1]:.4f}")
+print(f"Final validation loss: {history.history['val_loss'][-1]:.4f}")
 
 # Plot training and validation accuracy over each epoch
 plt.plot(history.history["accuracy"], label="Training Accuracy")
@@ -87,7 +106,14 @@ print(f"Test loss: {loss:.4f}")
 print(f"Test accuracy: {accuracy:.4f}")
 
 # Save graph and results table
-save_results(history, accuracy, epochs=EPOCHS, batch_size=32, plt=plt)
+save_results(
+    history,
+    loss,
+    accuracy,
+    epochs=EPOCHS,
+    batch_size=BATCH_SIZE,
+    plt=plt
+)
 
 # Show graph window
 plt.show()
