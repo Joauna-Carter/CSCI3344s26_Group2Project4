@@ -15,8 +15,8 @@ RANDOM_SEED = 16
 
 # optimal layer sizes and epochs from tune_hyperparams.py were 96->48, 40,
 # but these values were manually found to have slightly less loss:
-HIDDEN_1, HIDDEN_2 = 92, 46
-EPOCHS = 38
+HIDDEN_1, HIDDEN_2 = 32, 16
+EPOCHS = 11
 
 try:
     df = pd.read_csv("diabetes.csv")
