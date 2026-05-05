@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-from keras.utils import set_random_seed
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Input
@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, train_size=0.8, random_state=RANDOM_SEED
 )
 
-set_random_seed(RANDOM_SEED)
+tf.random.set_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 
 # Build MLP
