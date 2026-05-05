@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from keras.utils import set_random_seed
 
@@ -9,9 +10,11 @@ RANDOM_SEED = 16
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Input
+
+from results_logger import save_results
 from utils import preprocess
 
-# Optimal settings from tune_hyperparams2.py (same seed/split as tuner).
+# Optimal settings from tune_hyperparams2.py
 HIDDEN_1, HIDDEN_2, HIDDEN_3 = 80, 40, 20
 EPOCHS = 25
 
@@ -56,7 +59,7 @@ model.compile(
 )
 
 # Train the model
-model.fit(
+history = model.fit(
     X_train,
     y_train,
     epochs=EPOCHS,
@@ -65,7 +68,26 @@ model.fit(
     verbose=2,
 )
 
+# Plot training and validation accuracy over each epoch
+plt.plot(history.history["accuracy"], label="Training Accuracy")
+plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
+
+# Add title and axis labels for clarity
+plt.title("Model2 Accuracy Over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+
+# Show legend to distinguish the two lines
+plt.legend()
+
 # Evaluate model accuracy on the testing data
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
+
 print(f"Test loss: {loss:.4f}")
 print(f"Test accuracy: {accuracy:.4f}")
+
+# Save graph and results table
+save_results(history, accuracy, epochs=EPOCHS, batch_size=32, plt=plt)
+
+# Show graph window
+plt.show()

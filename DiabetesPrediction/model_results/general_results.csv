@@ -1,2 +1,4 @@
 RunTime,Epochs,BatchSize,TrainAccuracy,ValidationAccuracy,TestAccuracy,RunFolder,GraphFile,EpochFile
 2026-05-04_19-58-46,21,32,0.7935,0.7581,0.8247,model_results/run_2026-05-04_19-58-46,model_results/run_2026-05-04_19-58-46/accuracy_graph_2026-05-04_19-58-46.png,model_results/run_2026-05-04_19-58-46/epoch_results_2026-05-04_19-58-46.csv
+2026-05-04_20-44-00,38,32,0.8134,0.6935,0.8247,model_results/run_2026-05-04_20-44-00,model_results/run_2026-05-04_20-44-00/accuracy_graph_2026-05-04_20-44-00.png,model_results/run_2026-05-04_20-44-00/epoch_results_2026-05-04_20-44-00.csv
+2026-05-04_20-57-34,25,32,0.8351,0.7258,0.8247,model_results/run_2026-05-04_20-57-34,model_results/run_2026-05-04_20-57-34/accuracy_graph_2026-05-04_20-57-34.png,model_results/run_2026-05-04_20-57-34/epoch_results_2026-05-04_20-57-34.csv
