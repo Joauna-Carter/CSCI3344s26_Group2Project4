@@ -15,7 +15,38 @@ from utils import preprocess
 
 RANDOM_SEED = 16
 
-# Model parameters
+"""
+===========================
+EXPERIMENT LOG (DO NOT DELETE)
+===========================
+
+Baseline (BEST):
+HIDDEN_1 = 92
+HIDDEN_2 = 46
+EPOCHS = 38
+BATCH_SIZE = 32
+Test Accuracy ≈ 0.82–0.83
+
+Stratify split:
+Test Accuracy ≈ 0.76–0.77 (worse)
+
+Smaller batch size:
+BATCH_SIZE = 16
+Test Accuracy ≈ 0.76–0.77 (worse)
+
+Fewer epochs:
+EPOCHS = 30
+Test Accuracy ≈ 0.76 (worse)
+
+Tune_hyperparams best avg:
+HIDDEN_1 = 41
+HIDDEN_2 = 37
+EPOCHS = 39
+Avg Test Accuracy ≈ 0.812 (still below baseline)
+===========================
+"""
+"""
+# ===== FINAL MODEL (ACTIVE) =====
 HIDDEN_1 = 92
 HIDDEN_2 = 46
 EPOCHS = 38
@@ -23,6 +54,46 @@ BATCH_SIZE = 32
 TEST_SIZE = 0.2
 TRAIN_SIZE = 0.8
 VALIDATION_SPLIT = 0.1
+"""
+
+
+# ===== RUN OPTION 2 (smaller model) =====
+
+"""
+HIDDEN_1 = 64
+HIDDEN_2 = 32
+EPOCHS = 38
+BATCH_SIZE = 32
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
+"""
+
+
+
+
+# ===== RUN OPTION 3 (tuned avg best) =====
+HIDDEN_1 = 41
+HIDDEN_2 = 37
+EPOCHS = 39
+BATCH_SIZE = 32
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
+
+
+
+"""
+# ===== RUN OPTION 4 (bad run - batch 16) =====
+HIDDEN_1 = 92
+HIDDEN_2 = 46
+EPOCHS = 30
+BATCH_SIZE = 16
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
+
+"""
 
 
 try:
@@ -42,7 +113,7 @@ df = preprocess(df)
 X = df.drop("Outcome", axis=1).values
 y = df["Outcome"].values
 
-# Split the data into a training and testing set
+# Train/test split (baseline version WITHOUT stratify)
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -51,16 +122,28 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=RANDOM_SEED
 )
 
+"""
+# Stratify version (did NOT improve performance)
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=TEST_SIZE,
+    train_size=TRAIN_SIZE,
+    random_state=RANDOM_SEED,
+    stratify=y
+)
+"""
+
 set_random_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 
 # Build MLP
 model = Sequential(
     [
-        Input(shape=(8,)), # input layer
-        Dense(HIDDEN_1, activation="relu"), # hidden layer 1
-        Dense(HIDDEN_2, activation="relu"), # hidden layer 2
-        Dense(1, activation="sigmoid"), # output layer
+        Input(shape=(8,)),  # input layer
+        Dense(HIDDEN_1, activation="relu"),  # hidden layer 1
+        Dense(HIDDEN_2, activation="relu"),  # hidden layer 2
+        Dense(1, activation="sigmoid"),  # output layer
     ]
 )
 
@@ -81,31 +164,27 @@ history = model.fit(
     verbose=2,
 )
 
-# Print final training and validation results
+# Evaluate model accuracy on the testing data
+loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
+
+# Print results
 print(f"\nFinal training accuracy: {history.history['accuracy'][-1]:.4f}")
 print(f"Final validation accuracy: {history.history['val_accuracy'][-1]:.4f}")
 print(f"Final training loss: {history.history['loss'][-1]:.4f}")
 print(f"Final validation loss: {history.history['val_loss'][-1]:.4f}")
-
-# Plot training and validation accuracy over each epoch
-plt.plot(history.history["accuracy"], label="Training Accuracy")
-plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
-
-# Add title and axis labels for clarity
-plt.title("Model Accuracy Over Epochs")
-plt.xlabel("Epoch")
-plt.ylabel("Accuracy")
-
-# Show legend to distinguish the two lines
-plt.legend()
-
-# Evaluate model accuracy on the testing data
-loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
-
 print(f"Test loss: {loss:.4f}")
 print(f"Test accuracy: {accuracy:.4f}")
 
-# Save graph and results table
+# Plot accuracy
+plt.plot(history.history["accuracy"], label="Training Accuracy")
+plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
+
+plt.title(f"Model Accuracy Over Epochs - Test Accuracy: {accuracy:.4f}")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.legend()
+
+# Save results
 save_results(
     history,
     loss,
@@ -115,5 +194,4 @@ save_results(
     plt=plt
 )
 
-# Show graph window
 plt.show()
