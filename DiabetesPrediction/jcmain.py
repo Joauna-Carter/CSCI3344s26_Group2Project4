@@ -44,8 +44,7 @@ HIDDEN_2 = 37
 EPOCHS = 39
 Avg Test Accuracy ≈ 0.812 (still below baseline)
 ===========================
-"""
-"""
+
 # ===== FINAL MODEL (ACTIVE) =====
 HIDDEN_1 = 92
 HIDDEN_2 = 46
@@ -54,12 +53,9 @@ BATCH_SIZE = 32
 TEST_SIZE = 0.2
 TRAIN_SIZE = 0.8
 VALIDATION_SPLIT = 0.1
-"""
-
 
 # ===== RUN OPTION 2 (smaller model) =====
 
-"""
 HIDDEN_1 = 64
 HIDDEN_2 = 32
 EPOCHS = 38
@@ -67,9 +63,6 @@ BATCH_SIZE = 32
 TEST_SIZE = 0.2
 TRAIN_SIZE = 0.8
 VALIDATION_SPLIT = 0.1
-"""
-
-
 
 
 # ===== RUN OPTION 3 (tuned avg best) =====
@@ -82,8 +75,6 @@ TRAIN_SIZE = 0.8
 VALIDATION_SPLIT = 0.1
 
 
-
-"""
 # ===== RUN OPTION 4 (bad run - batch 16) =====
 HIDDEN_1 = 92
 HIDDEN_2 = 46
@@ -94,6 +85,29 @@ TRAIN_SIZE = 0.8
 VALIDATION_SPLIT = 0.1
 
 """
+
+""" 
+#from the main.py file 0.7987% test accuracy
+
+
+HIDDEN_1 = 32
+HIDDEN_2 = 16
+EPOCHS = 11
+BATCH_SIZE = 32
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
+"""
+
+# FINAL MODEL (ACTIVE) 
+#
+HIDDEN_1 = 41
+HIDDEN_2 = 39
+EPOCHS = 39
+BATCH_SIZE = 32
+TEST_SIZE = 0.2
+TRAIN_SIZE = 0.8
+VALIDATION_SPLIT = 0.1
 
 
 try:
@@ -184,6 +198,7 @@ plt.xlabel("Epoch")
 plt.ylabel("Accuracy")
 plt.legend()
 
+"""
 # Save results
 save_results(
     history,
@@ -193,5 +208,6 @@ save_results(
     batch_size=BATCH_SIZE,
     plt=plt
 )
+"""
 
 plt.show()
