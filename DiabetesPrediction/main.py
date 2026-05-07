@@ -32,8 +32,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # Build MLP
 model = Sequential()
-model.add(Dense(32, activation="relu", input_shape=(8,))) #hidden layer 1
-model.add(Dense(16, activation="relu")) # hidden layer 2 
+model.add(Dense(32,activation="relu", input_shape=(8,))) #hidden layer 1
+model.add(Dense(16,activation="relu")) # hidden layer 2 
 model.add(Dense(1, activation="sigmoid")) #output layer
 
 # Configure the model for training

@@ -101,12 +101,12 @@ VALIDATION_SPLIT = 0.1
 
 # MODEL (ACTIVE) 
 
-HIDDEN_1 = 41
-HIDDEN_2 = 39
-EPOCHS = 39
+HIDDEN_1 = 32
+HIDDEN_2 = 16
+EPOCHS = 21
 BATCH_SIZE = 32
-TEST_SIZE = 0.2
-TRAIN_SIZE = 0.8
+TEST_SIZE = 0.1
+TRAIN_SIZE = 0.9
 VALIDATION_SPLIT = 0.1
 
 
@@ -198,7 +198,7 @@ plt.xlabel("Epoch")
 plt.ylabel("Accuracy")
 plt.legend()
 
-"""
+
 # Save results
 save_results(
     history,
@@ -208,6 +208,6 @@ save_results(
     batch_size=BATCH_SIZE,
     plt=plt
 )
-"""
+
 
 plt.show()
